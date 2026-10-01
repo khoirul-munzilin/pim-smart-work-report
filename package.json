@@ -1,0 +1,5 @@
+{
+  "name":"pim-work-report-online","version":"1.0.0","private":true,"type":"module",
+  "scripts":{"report":"node scripts/daily-report.mjs"},
+  "dependencies":{"@supabase/supabase-js":"^2.57.0","exceljs":"^4.4.0","nodemailer":"^7.0.6"}
+}
