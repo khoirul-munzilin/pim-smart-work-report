@@ -1,0 +1,1 @@
+self.addEventListener('install',e=>e.waitUntil(caches.open('pim-v1').then(c=>c.addAll(['./','./style.css','./app.js','./config.js']))));self.addEventListener('fetch',e=>e.respondWith(fetch(e.request).catch(()=>caches.match(e.request))));
