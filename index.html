@@ -62,20 +62,12 @@
         <input id="machineGroupDisplay" readonly>
       </label>
 
-      <label>
-        Cari Mesin
-        <div class="machine-search-wrap">
-          <input
-            id="machineSearchInput"
-            type="search"
-            autocomplete="off"
-            placeholder="Kode, nama, area, FLOC, atau Equipment No."
-          >
-
-          <select id="machineSelect" name="machine_id" class="hidden"></select>
-          <div id="machineSuggestions" class="machine-search-results hidden"></div>
-        </div>
-      </label>
+<label>
+  Pilih Mesin
+  <select id="machineSelect" name="machine_id" required>
+    <option value="">Memuat data mesin...</option>
+  </select>
+</label>
 
       <label>
         Shift
@@ -257,7 +249,7 @@
   <script src="config.js"></script>
   <script src="app.js?v=2"></script>
  <script src="user-management.js?v=1script"></script>
-<script src="maintenance-request-online.js?v=1script"></script>
+
   <script src="excel-fix.js?v=1"></script>
 </body>
 </html>
