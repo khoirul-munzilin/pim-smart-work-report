@@ -38,63 +38,6 @@ function normalize(value) {
   return String(value ?? "").trim().toLowerCase();
 }
 
-// Membaca kolom database secara fleksibel, termasuk perbedaan huruf,
-// underscore, spasi, dan singkatan seperti funcloc atau floc.
-function getFlexibleField(object, aliases) {
-  if (!object) return "";
-
-  const normalizeKey = (value) =>
-    String(value ?? "")
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, "");
-
-  const normalizedAliases = aliases.map(normalizeKey);
-  const matchingKey = Object.keys(object).find((key) =>
-    normalizedAliases.includes(normalizeKey(key))
-  );
-
-  return matchingKey ? object[matchingKey] : "";
-}
-
-function getFunctionalLocation(machine) {
-  return getFlexibleField(machine, [
-    "functional_location",
-    "functional location",
-    "functionalLocation",
-    "functional_loc",
-    "function_location",
-    "funcloc",
-    "func_loc",
-    "floc",
-    "fun_loc",
-    "f_location"
-  ]);
-}
-
-function getEquipmentNumber(machine) {
-  return getFlexibleField(machine, [
-    "equipment_no",
-    "equipment number",
-    "equipment_number",
-    "equipmentNo",
-    "equipment",
-    "equ_no",
-    "equip_no"
-  ]);
-}
-
-function getMachineGroup(machine) {
-  return String(
-    getFlexibleField(machine, [
-      "machine_group",
-      "machine group",
-      "machineGroup",
-      "group_name",
-      "group"
-    ]) || "GENERAL"
-  ).trim().toUpperCase();
-}
-
 async function init() {
   const { data: { session }, error } = await sb.auth.getSession();
   if (error) return toast(error.message);
@@ -237,7 +180,7 @@ function resetMachineSelection() {
 }
 
 function machineLabel(machine) {
-  return `[${getMachineGroup(machine)}] ${machine.code || ""} • ${machine.name || ""}`;
+  return `[${machine.machine_group || "GENERAL"}] ${machine.code || ""} • ${machine.name || ""}`;
 }
 
 function renderMachineSuggestions(keyword = "") {
@@ -245,14 +188,8 @@ function renderMachineSuggestions(keyword = "") {
   if (!box) return;
   const key = normalize(keyword);
   const found = machines.filter((machine) => {
-    const haystack = [
-      machine.code,
-      machine.name,
-      machine.section,
-      getFunctionalLocation(machine),
-      getEquipmentNumber(machine),
-      getMachineGroup(machine)
-    ].map(normalize).join(" ");
+    const haystack = [machine.code, machine.name, machine.section, machine.functional_location, machine.equipment_no, machine.machine_group]
+      .map(normalize).join(" ");
     return !key || haystack.includes(key);
   }).slice(0, 30);
 
@@ -278,23 +215,13 @@ function selectMachine(id) {
   select.value = String(machine.id);
   $("machineSearchInput").value = machineLabel(machine);
   $("machineSuggestions").classList.add("hidden");
-
-  const machineGroup = getMachineGroup(machine);
-  const functionalLocation = getFunctionalLocation(machine);
-  const equipmentNumber = getEquipmentNumber(machine);
-
-  // Tampilan kelompok mengikuti mesin yang benar-benar dipilih.
-  if ($("machineGroupDisplay")) {
-    $("machineGroupDisplay").value = machineGroup;
-  }
-
   $("machineDetail").innerHTML = `
     <b>${escapeHtml(machine.code || machine.name)}</b>
     <p>Nama: ${escapeHtml(machine.name || "-")}</p>
-    <p>Group: ${escapeHtml(machineGroup)}</p>
+    <p>Group: ${escapeHtml(machine.machine_group || "-")}</p>
     <p>Area/Section: ${escapeHtml(machine.section || "-")}</p>
-    <p>Functional Location: ${escapeHtml(functionalLocation || "Data FunLoc kosong")}</p>
-    <p>Equipment No.: ${escapeHtml(equipmentNumber || "Data Equipment kosong")}</p>
+    <p>Functional Location: ${escapeHtml(machine.functional_location || "-")}</p>
+    <p>Equipment No.: ${escapeHtml(machine.equipment_no || "-")}</p>
   `;
 }
 
