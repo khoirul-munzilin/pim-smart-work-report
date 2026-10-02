@@ -1,50 +1,192 @@
-<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#092b4c"><link rel="manifest" href="manifest.json"><link rel="stylesheet" href="style.css"><title>PIM Smart Work Report</title></head><body>
-	<section id="login" class="login"><form id="loginForm" class="loginbox"><h1>⚙ PIM Smart Work Report</h1><p>Production & Engineering Report</p><input id="email" type="email" placeholder="Email pengguna" required><input id="password" type="password" placeholder="Password" required><button style="width:100%">MASUK</button><p><small>Akun dibuat oleh Admin melalui Supabase Authentication.</small></p></form></section>
-	<section id="app" class="hidden"><header><b>PIM • SMART WORK REPORT</b><span id="who"></span></header><nav><button data-page="dashboard">⌂ Dashboard</button><button class="operator admin" data-page="create">＋ Lapor</button><button class="technician admin" data-page="jobs">🔧 Jobs</button><button class="operator admin" data-page="verify">✓ Verifikasi</button><button class="supervisor admin" data-page="reports">▤ Report</button><button class="admin" data-page="admin">⚙ Admin</button><button id="logout">↪ Logout</button></nav><main>
-		<section id="dashboard" class="page"><h2>Dashboard</h2><div class="stats"><div class="stat"><b id="total">0</b>Total</div><div class="stat"><b id="open">0</b>Open</div><div class="stat"><b id="progress">0</b>Proses</div><div class="stat"><b id="closed">0</b>Closed</div></div><div class="card"><h3>Pekerjaan terbaru</h3><div id="latest"></div></div></section>
-		<section id="create" class="page hidden"><h2>Laporan Produksi</h2><form id="createForm" class="card"><div class="grid">
-  <label>
-    Mesin
-    <select name="machine_id" id="machineSelect" required>
-      <option value="">Pilih mesin</option>
-    </select>
-  </label>
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#092b4c">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <title>PIM Smart Work Report</title>
+</head>
+<body>
+  <section id="login" class="login">
+    <form id="loginForm" class="loginbox">
+      <h1>⚙ PIM Smart Work Report</h1>
+      <p>Production & Engineering Report</p>
+      <input id="email" type="email" placeholder="Email pengguna" required>
+      <input id="password" type="password" placeholder="Password" required>
+      <button style="width:100%">MASUK</button>
+      <p><small>Akun dibuat oleh Admin melalui Supabase Authentication.</small></p>
+    </form>
+  </section>
 
-  <label>
-    Shift
-    <select name="shift" required>
-      <option value="Shift 1">Shift 1</option>
-      <option value="Shift 2">Shift 2</option>
-      <option value="Shift 3">Shift 3</option>
-    </select>
-  </label>
+  <section id="app" class="hidden">
+    <header>
+      <b>PIM • SMART WORK REPORT</b>
+      <span id="who"></span>
+    </header>
 
-  <label>
-    Prioritas
-    <select name="priority" required>
-      <option value="LOW">LOW</option>
-      <option value="MEDIUM">MEDIUM</option>
-      <option value="HIGH" selected>HIGH</option>
-      <option value="EMERGENCY">EMERGENCY</option>
-    </select>
-  </label>
+    <nav>
+      <button data-page="dashboard">⌂ Dashboard</button>
+      <button class="operator admin" data-page="create">＋ Lapor</button>
+      <button class="technician admin" data-page="jobs">🔧 Jobs</button>
+      <button class="operator admin" data-page="verify">✓ Verifikasi</button>
+      <button class="supervisor admin" data-page="reports">▤ Report</button>
+      <button class="admin" data-page="admin">⚙ Admin</button>
+      <button id="logout">↪ Logout</button>
+    </nav>
 
-  <label>
-    Technician
-    <select
-      name="technician_id"
-      id="technicianSelect"
-      required
-    >
-      <option value="">Pilih technician</option>
-    </select>
-  </label>
-</div><label>Temuan<textarea name="problem" required></textarea></label><label>Dampak Produksi<textarea name="impact"></textarea></label><label>Foto Temuan<input name="photo" type="file" accept="image/*" capture="environment" required></label><button>KIRIM KE TEKNISI</button></form></section>
-		<section id="jobs" class="page hidden"><h2>Pekerjaan Teknisi</h2><div id="jobList"></div></section>
-		<section id="work" class="page hidden"><h2>Isi Hasil Pekerjaan</h2><form id="workForm" class="card"><div id="workTitle"></div><label>Penyebab<textarea name="cause" required></textarea></label><label>Tindakan<textarea name="action" required></textarea></label><label>Spare Part<input name="spare_part"></label><label>Catatan untuk Produksi<textarea name="tech_note"></textarea></label><label>Foto Hasil<input name="photo" type="file" accept="image/*" capture="environment" required></label><button class="purple">REQUEST CHECK</button></form></section>
-		<section id="verify" class="page hidden"><h2>Verifikasi Produksi</h2><div id="verifyList"></div></section>
-		<section id="verifyFormPage" class="page hidden"><h2>Pengecekan Hasil</h2><form id="verifyForm" class="card"><div id="verifyTitle"></div><label>Hasil Test<select name="production_test"><option>NORMAL</option><option>ABNORMAL</option></select></label><label>Catatan<textarea name="production_note" required></textarea></label><label>Foto Verifikasi<input name="photo" type="file" accept="image/*" capture="environment" required></label><div class="row"><button name="decision" value="CLOSED" class="green">TERIMA & CLOSED</button><button name="decision" value="RETURNED" class="red">KEMBALIKAN</button></div></form></section>
-		<section id="reports" class="page hidden"><h2>Report</h2><div class="card row"><input id="reportDate" type="date"><button id="downloadExcel" class="green">DOWNLOAD EXCEL + FOTO</button></div><div class="card scroll"><table><thead><tr><th>Report</th><th>Mesin</th><th>Temuan</th><th>Status</th><th>Teknisi</th></tr></thead><tbody id="reportRows"></tbody></table></div></section>
-		<section id="admin" class="page hidden"><h2>Admin</h2><div class="card"><h3>Master Mesin</h3><form id="machineForm" class="grid"><label>Kode QR<input name="code" required></label><label>Nama Mesin<input name="name" required></label><label>Section<input name="section" required></label><button>SIMPAN MESIN</button></form><p>Untuk 1.000 mesin, import CSV dilakukan melalui Supabase Table Editor atau script import.</p></div><div class="card"><h3>Catatan Akun</h3><p>Buat akun melalui Supabase Authentication, lalu tambahkan role pada tabel profiles.</p></div></section>
-	</main></section><div id="toast" class="toast hidden"></div>
-	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script><script src="config.js"></script><script src="app.js"></script><script src="excel-fix.js?v=1"></script></body></html>
+    <main>
+      <section id="dashboard" class="page">
+        <h2>Dashboard</h2>
+        <div class="stats">
+          <div class="stat"><b id="total">0</b>Total</div>
+          <div class="stat"><b id="open">0</b>Open</div>
+          <div class="stat"><b id="progress">0</b>Proses</div>
+          <div class="stat"><b id="closed">0</b>Closed</div>
+        </div>
+        <div class="card">
+          <h3>Pekerjaan terbaru</h3>
+          <div id="latest"></div>
+        </div>
+      </section>
+
+      <section id="create" class="page hidden">
+        <h2>Laporan Produksi</h2>
+        <form id="createForm" class="card">
+          <div class="grid">
+            <label>
+              Mesin
+              <select name="machine_id" id="machineSelect" required>
+                <option value="">Pilih mesin</option>
+              </select>
+            </label>
+
+            <label>
+              Shift
+              <select name="shift" required>
+                <option value="Shift 1">Shift 1</option>
+                <option value="Shift 2">Shift 2</option>
+                <option value="Shift 3">Shift 3</option>
+              </select>
+            </label>
+
+            <label>
+              Prioritas
+              <select name="priority" required>
+                <option value="LOW">LOW</option>
+                <option value="MEDIUM">MEDIUM</option>
+                <option value="HIGH" selected>HIGH</option>
+                <option value="EMERGENCY">EMERGENCY</option>
+              </select>
+            </label>
+
+            <label>
+              Technician
+              <select name="technician_id" id="technicianSelect" required>
+                <option value="">Pilih technician</option>
+              </select>
+            </label>
+          </div>
+
+          <label>Temuan<textarea name="problem" required></textarea></label>
+          <label>Dampak Produksi<textarea name="impact"></textarea></label>
+          <label>Foto Temuan<input name="photo" type="file" accept="image/*" capture="environment" required></label>
+          <button>KIRIM KE TEKNISI</button>
+        </form>
+      </section>
+
+      <section id="jobs" class="page hidden">
+        <h2>Pekerjaan Teknisi</h2>
+        <div id="jobList"></div>
+      </section>
+
+      <section id="work" class="page hidden">
+        <h2>Isi Hasil Pekerjaan</h2>
+        <form id="workForm" class="card">
+          <div id="workTitle"></div>
+          <label>Penyebab<textarea name="cause" required></textarea></label>
+          <label>Tindakan<textarea name="action" required></textarea></label>
+          <label>Spare Part<input name="spare_part"></label>
+          <label>Catatan untuk Produksi<textarea name="tech_note"></textarea></label>
+          <label>Foto Hasil<input name="photo" type="file" accept="image/*" capture="environment" required></label>
+          <button class="purple">REQUEST CHECK</button>
+        </form>
+      </section>
+
+      <section id="verify" class="page hidden">
+        <h2>Verifikasi Produksi</h2>
+        <div id="verifyList"></div>
+      </section>
+
+      <section id="verifyFormPage" class="page hidden">
+        <h2>Pengecekan Hasil</h2>
+        <form id="verifyForm" class="card">
+          <div id="verifyTitle"></div>
+          <label>
+            Hasil Test
+            <select name="production_test">
+              <option>NORMAL</option>
+              <option>ABNORMAL</option>
+            </select>
+          </label>
+          <label>Catatan<textarea name="production_note" required></textarea></label>
+          <label>Foto Verifikasi<input name="photo" type="file" accept="image/*" capture="environment" required></label>
+          <div class="row">
+            <button name="decision" value="CLOSED" class="green">TERIMA & CLOSED</button>
+            <button name="decision" value="RETURNED" class="red">KEMBALIKAN</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="reports" class="page hidden">
+        <h2>Report</h2>
+        <div class="card row">
+          <input id="reportDate" type="date">
+          <button id="downloadExcel" class="green">DOWNLOAD EXCEL + FOTO</button>
+        </div>
+        <div class="card scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Report</th>
+                <th>Mesin</th>
+                <th>Temuan</th>
+                <th>Status</th>
+                <th>Teknisi</th>
+              </tr>
+            </thead>
+            <tbody id="reportRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="admin" class="page hidden">
+        <h2>Admin</h2>
+        <div class="card">
+          <h3>Master Mesin</h3>
+          <form id="machineForm" class="grid">
+            <label>Kode QR<input name="code" required></label>
+            <label>Nama Mesin<input name="name" required></label>
+            <label>Section<input name="section" required></label>
+            <button>SIMPAN MESIN</button>
+          </form>
+          <p>Untuk 1.000 mesin, import CSV dilakukan melalui Supabase Table Editor atau script import.</p>
+        </div>
+        <div class="card">
+          <h3>Catatan Akun</h3>
+          <p>Buat akun melalui Supabase Authentication, lalu tambahkan role pada tabel profiles.</p>
+        </div>
+      </section>
+    </main>
+  </section>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js?v=2"></script>
+  <script src="excel-fix.js?v=1"></script>
+</body>
+</html>
