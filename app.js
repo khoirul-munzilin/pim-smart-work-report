@@ -155,27 +155,62 @@ async function loadTechnicians() {
 }
 
 async function load() {
-  const machineResult = await sb
+  let machineQuery = sb
     .from("machines")
     .select("*")
     .eq("active", true)
-    .order("section");
+    .order("machine_group", { ascending: true })
+    .order("section", { ascending: true })
+    .order("name", { ascending: true });
+
+  if (profile.role === "operator") {
+    const operatorGroup = String(
+      profile.section || ""
+    )
+      .trim()
+      .toUpperCase();
+
+    if (
+      !["RDS", "HMP", "GENERAL"].includes(operatorGroup)
+    ) {
+      toast(
+        "Section Operator harus RDS, HMP, atau GENERAL."
+      );
+    } else {
+      machineQuery = machineQuery.eq(
+        "machine_group",
+        operatorGroup
+      );
+    }
+  }
+
+  const machineResult = await machineQuery;
 
   let reportQuery = sb
     .from("reports_view")
     .select("*")
-    .order("created_at", { ascending: false });
+    .order("created_at", {
+      ascending: false
+    });
 
   if (profile.role === "technician") {
-    reportQuery = reportQuery.eq("technician_id", current.id);
+    reportQuery = reportQuery.eq(
+      "technician_id",
+      current.id
+    );
   } else if (profile.role === "operator") {
-    reportQuery = reportQuery.eq("reporter_id", current.id);
+    reportQuery = reportQuery.eq(
+      "reporter_id",
+      current.id
+    );
   }
 
   const reportResult = await reportQuery;
 
   if (machineResult.error || reportResult.error) {
-    const error = machineResult.error || reportResult.error;
+    const error =
+      machineResult.error || reportResult.error;
+
     console.error("Gagal memuat data:", error);
     return toast(error.message);
   }
@@ -183,20 +218,22 @@ async function load() {
   machines = machineResult.data || [];
   reports = reportResult.data || [];
 
-  $("machineSelect").innerHTML =
-    '<option value="">Pilih mesin</option>' +
-    machines
-      .map(
-        (machine) =>
-          `<option value="${escapeHtml(machine.id)}">${escapeHtml(
-            machine.section
-          )} • ${escapeHtml(machine.name)} • ${escapeHtml(
-            machine.code
-          )}</option>`
-      )
-      .join("");
+  const machineGroupDisplay =
+    document.getElementById("machineGroupDisplay");
 
-  if (profile.role === "operator" || profile.role === "admin") {
+  if (machineGroupDisplay) {
+    machineGroupDisplay.value =
+      profile.role === "operator"
+        ? String(profile.section || "")
+            .trim()
+            .toUpperCase()
+        : "SEMUA KELOMPOK";
+  }
+
+  if (
+    profile.role === "operator" ||
+    profile.role === "admin"
+  ) {
     await loadTechnicians();
   }
 
