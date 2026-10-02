@@ -32,6 +32,7 @@
       <button class="technician admin" data-page="jobs">🔧 Jobs</button>
       <button class="operator admin" data-page="verify">✓ Verifikasi</button>
       <button class="supervisor admin" data-page="reports">▤ Report</button>
+      <button class="supervisor admin" data-page="users">👥 Kelola Akun</button>
       <button class="admin" data-page="admin">⚙ Admin</button>
       <button id="logout">↪ Logout</button>
     </nav>
@@ -160,6 +161,29 @@
           </table>
         </div>
       </section>
+<section id="users" class="page hidden">
+  <h2>Kelola Akun</h2>
+  <form id="userForm" class="card">
+    <p>Administrator dan Supervisor dapat membuat akun Operator atau Supervisor.</p>
+    <div class="grid">
+      <label>Nama Lengkap<input name="full_name" required maxlength="100"></label>
+      <label>Email<input name="email" type="email" required></label>
+      <label>Password Awal<input name="password" type="password" required minlength="8"></label>
+      <label>Role
+        <select name="role" required>
+          <option value="">Pilih role</option>
+          <option value="operator">Operator</option>
+          <option value="supervisor">Supervisor</option>
+        </select>
+      </label>
+      <label>Section<input name="section" required maxlength="100"></label>
+    </div>
+    <button id="createUserButton" type="submit">BUAT AKUN</button>
+  </form>
+</section>
+
+<!-- 3. TAMBAHKAN SETELAH app.js DAN SEBELUM PENUTUP BODY -->
+<script src="user-management.js?v=1"></script>
 
       <section id="admin" class="page hidden">
         <h2>Admin</h2>
