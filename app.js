@@ -355,52 +355,113 @@ async function upload(file, reportId, stage) {
 }
 
 $("createForm").onsubmit = async (event) => {
-  event.preventDefault();
-
-  try {
-    const formData = new FormData(event.target);
-    const technicianId = formData.get("technician_id");
-
-    if (!technicianId) {
-      throw new Error("Pilih technician terlebih dahulu.");
-    }
-
-    const reportNumber =
-      "RPT-" +
-      new Date().toISOString().slice(0, 10).replaceAll("-", "") +
-      "-" +
-      String(Date.now()).slice(-5);
-
-    const { data, error } = await sb
-      .from("reports")
-      .insert({
-        report_no: reportNumber,
-        machine_id: formData.get("machine_id"),
-        reporter_id: current.id,
-        technician_id: technicianId,
-        shift: formData.get("shift"),
-        priority: formData.get("priority"),
-        problem: formData.get("problem"),
-        impact: formData.get("impact"),
-        status: "OPEN"
-      })
-      .select()
-      .single();
-
-    if (error) {
-      throw error;
-    }
-
-    await upload(formData.get("photo"), data.id, "PROBLEM");
-
-    event.target.reset();
-    await load();
-    show("dashboard");
-    toast("Laporan berhasil dikirim ke technician");
-  } catch (error) {
-    console.error("Gagal membuat laporan:", error);
-    toast(error.message);
-  }
+event.preventDefault();
+ 
+try {
+const formData = new FormData(event.target);
+const technicianId = formData.get("technician_id");
+ 
+if (!technicianId) {
+throw new Error("Pilih technician terlebih dahulu.");
+}
+ 
+// Ambil machine_id dari form jika sudah tersedia
+let machineId = formData.get("machine_id");
+ 
+// Jika machine_id kosong, cari berdasarkan teks pada kolom Cari Mesin
+if (!machineId) {
+const inputs = Array.from(
+event.target.querySelectorAll("input")
+);
+ 
+const searchInput = inputs.find((input) => {
+const text = `${input.id} ${input.name} ${input.placeholder}`
+.toLowerCase();
+ 
+return (
+text.includes("machine") ||
+text.includes("mesin") ||
+String(input.value).includes("[")
+);
+});
+ 
+const keyword = String(searchInput?.value || "")
+.trim()
+.toUpperCase();
+ 
+const selectedMachine = machines.find((machine) => {
+const code = String(machine.code || "")
+.trim()
+.toUpperCase();
+ 
+const name = String(machine.name || "")
+.trim()
+.toUpperCase();
+ 
+return (
+keyword === code ||
+keyword === name ||
+keyword.includes(code) ||
+keyword.includes(name)
+);
+});
+ 
+if (selectedMachine) {
+machineId = selectedMachine.id;
+}
+}
+ 
+if (!machineId) {
+throw new Error(
+"Mesin tidak ditemukan. Hapus pencarian, lalu pilih mesin kembali."
+);
+}
+ 
+const reportNumber =
+"RPT-" +
+new Date()
+.toISOString()
+.slice(0, 10)
+.replaceAll("-", "") +
+"-" +
+String(Date.now()).slice(-5);
+ 
+const { data, error } = await sb
+.from("reports")
+.insert({
+report_no: reportNumber,
+machine_id: machineId,
+reporter_id: current.id,
+technician_id: technicianId,
+shift: formData.get("shift"),
+priority: formData.get("priority"),
+problem: formData.get("problem"),
+impact: formData.get("impact"),
+status: "OPEN"
+})
+.select()
+.single();
+ 
+if (error) {
+throw error;
+}
+ 
+const photo = formData.get("photo");
+ 
+if (photo && photo.size > 0) {
+await upload(photo, data.id, "PROBLEM");
+}
+ 
+event.target.reset();
+ 
+await load();
+show("dashboard");
+ 
+toast("Laporan berhasil dikirim ke technician");
+} catch (error) {
+console.error("Gagal membuat laporan:", error);
+toast(error.message);
+}
 };
 
 window.startWork = async (id) => {
