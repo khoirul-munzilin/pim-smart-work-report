@@ -419,17 +419,498 @@ $("machineForm").onsubmit = async (event) => {
 $("downloadExcel").onclick = async () => {
   try {
     const date = $("reportDate").value;
-    if (!date) throw new Error("Pilih tanggal report terlebih dahulu.");
-    const nextDate = new Date(`${date}T00:00:00`); nextDate.setDate(nextDate.getDate() + 1);
-    const rows = reports.filter((r) => r.created_at >= `${date}T00:00:00` && r.created_at < `${nextDate.toISOString().slice(0,10)}T00:00:00`);
+
+    if (!date) {
+      throw new Error("Pilih tanggal report terlebih dahulu.");
+    }
+
+    toast("Menyiapkan Excel dan dokumentasi...");
+
+    /*
+     * Ambil langsung dari reports_view.
+     * Jangan hanya memakai array reports karena data dapat terfilter role.
+     */
+    const startDate = new Date(`${date}T00:00:00`);
+    const endDate = new Date(`${date}T00:00:00`);
+
+    endDate.setDate(endDate.getDate() + 1);
+
+    const { data: rows, error: reportError } = await sb
+      .from("reports_view")
+      .select("*")
+      .gte("created_at", startDate.toISOString())
+      .lt("created_at", endDate.toISOString())
+      .order("created_at", {
+        ascending: true
+      });
+
+    if (reportError) {
+      throw reportError;
+    }
+
+    if (!rows || rows.length === 0) {
+      throw new Error(
+        "Tidak ada Maintenance Request pada tanggal tersebut."
+      );
+    }
+
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Detail");
-    worksheet.columns = ["Report","Mesin","Section","Temuan","Dampak","Prioritas","Status","Operator","Teknisi","Penyebab","Tindakan","Spare Part"].map((header,index)=>({header,key:String(index),width:index<3?18:28}));
-    rows.forEach((r)=>worksheet.addRow([r.report_no,r.machine_name,r.section,r.problem,r.impact,r.priority,r.status,r.reporter_name,r.technician_name,r.cause,r.action,r.spare_part]));
-    const buffer = await workbook.xlsx.writeBuffer();
-    const anchor = document.createElement("a");
-    anchor.href = URL.createObjectURL(new Blob([buffer])); anchor.download = `Daily_Report_${date}.xlsx`; anchor.click(); URL.revokeObjectURL(anchor.href);
-  } catch (error) { console.error(error); toast(error.message); }
+
+    /*
+     * SHEET DETAIL
+     */
+    const detailSheet =
+      workbook.addWorksheet("Maintenance Request");
+
+    detailSheet.views = [
+      {
+        state: "frozen",
+        ySplit: 1
+      }
+    ];
+
+    detailSheet.columns = [
+      { header: "No.", key: "no", width: 7 },
+      {
+        header: "Nomor Request",
+        key: "report_no",
+        width: 24
+      },
+      {
+        header: "Tanggal",
+        key: "created_at",
+        width: 22
+      },
+      {
+        header: "Jenis Pekerjaan",
+        key: "request_type",
+        width: 20
+      },
+      {
+        header: "Mesin",
+        key: "machine_name",
+        width: 28
+      },
+      {
+        header: "Machine Group",
+        key: "machine_group",
+        width: 18
+      },
+      {
+        header: "Section",
+        key: "section",
+        width: 24
+      },
+      {
+        header: "Functional Location",
+        key: "functional_location",
+        width: 45
+      },
+      {
+        header: "Equipment Number",
+        key: "equipment_number",
+        width: 25
+      },
+      {
+        header: "Shift",
+        key: "shift",
+        width: 15
+      },
+      {
+        header: "Prioritas",
+        key: "priority",
+        width: 15
+      },
+      {
+        header: "Deskripsi Kerusakan",
+        key: "problem",
+        width: 42
+      },
+      {
+        header: "Dampak Operasional",
+        key: "impact",
+        width: 38
+      },
+      {
+        header: "Status",
+        key: "status",
+        width: 18
+      },
+      {
+        header: "Pelapor",
+        key: "reporter_name",
+        width: 24
+      },
+      {
+        header: "Technician",
+        key: "technician_name",
+        width: 24
+      },
+      {
+        header: "Penyebab",
+        key: "cause",
+        width: 38
+      },
+      {
+        header: "Tindakan",
+        key: "action",
+        width: 42
+      },
+      {
+        header: "Spare Part",
+        key: "spare_part",
+        width: 28
+      },
+      {
+        header: "Catatan Technician",
+        key: "tech_note",
+        width: 38
+      },
+      {
+        header: "Hasil Test",
+        key: "production_test",
+        width: 18
+      },
+      {
+        header: "Catatan Verifikasi",
+        key: "production_note",
+        width: 38
+      },
+      {
+        header: "Waktu Mulai",
+        key: "start_at",
+        width: 22
+      },
+      {
+        header: "Request Verification",
+        key: "request_check_at",
+        width: 22
+      },
+      {
+        header: "Waktu Closed",
+        key: "closed_at",
+        width: 22
+      }
+    ];
+
+    function formatDate(value) {
+      if (!value) {
+        return "";
+      }
+
+      const parsed = new Date(value);
+
+      if (Number.isNaN(parsed.getTime())) {
+        return value;
+      }
+
+      return parsed.toLocaleString("id-ID");
+    }
+
+    rows.forEach((report, index) => {
+      detailSheet.addRow({
+        no: index + 1,
+        report_no: report.report_no || "",
+        created_at: formatDate(report.created_at),
+        request_type: report.request_type || "",
+        machine_name: report.machine_name || "",
+        machine_group: report.machine_group || "",
+        section:
+          report.section ||
+          report.plant_area ||
+          "",
+        functional_location:
+          report.functional_location ||
+          report.function_location ||
+          "",
+        equipment_number:
+          report.sap_equipment ||
+          report.equipment_no ||
+          report.equipment_number ||
+          "",
+        shift: report.shift || "",
+        priority: report.priority || "",
+        problem: report.problem || "",
+        impact: report.impact || "",
+        status: report.status || "",
+        reporter_name: report.reporter_name || "",
+        technician_name:
+          report.technician_name || "",
+        cause: report.cause || "",
+        action: report.action || "",
+        spare_part: report.spare_part || "",
+        tech_note: report.tech_note || "",
+        production_test:
+          report.production_test || "",
+        production_note:
+          report.production_note || "",
+        start_at: formatDate(report.start_at),
+        request_check_at:
+          formatDate(report.request_check_at),
+        closed_at: formatDate(report.closed_at)
+      });
+    });
+
+    const header = detailSheet.getRow(1);
+
+    header.height = 30;
+    header.font = {
+      bold: true,
+      color: {
+        argb: "FFFFFFFF"
+      }
+    };
+
+    header.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: {
+        argb: "FF17365D"
+      }
+    };
+
+    header.alignment = {
+      horizontal: "center",
+      vertical: "middle",
+      wrapText: true
+    };
+
+    detailSheet.eachRow((row, rowNumber) => {
+      if (rowNumber > 1) {
+        row.alignment = {
+          vertical: "top",
+          wrapText: true
+        };
+      }
+    });
+
+    detailSheet.autoFilter = {
+      from: "A1",
+      to: "Y1"
+    };
+
+    /*
+     * SHEET DOKUMENTASI
+     */
+    const photoSheet =
+      workbook.addWorksheet("Dokumentasi");
+
+    photoSheet.getColumn("A").width = 34;
+    photoSheet.getColumn("B").width = 4;
+    photoSheet.getColumn("C").width = 34;
+    photoSheet.getColumn("D").width = 4;
+    photoSheet.getColumn("E").width = 34;
+
+    let currentRow = 1;
+
+    for (const report of rows) {
+      photoSheet.mergeCells(
+        currentRow,
+        1,
+        currentRow,
+        5
+      );
+
+      const title =
+        photoSheet.getCell(currentRow, 1);
+
+      title.value =
+        `${report.report_no} • ` +
+        `${report.machine_name || "-"}`;
+
+      title.font = {
+        bold: true,
+        color: {
+          argb: "FFFFFFFF"
+        },
+        size: 13
+      };
+
+      title.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: {
+          argb: "FF17365D"
+        }
+      };
+
+      title.alignment = {
+        vertical: "middle"
+      };
+
+      photoSheet.getCell(
+        currentRow + 1,
+        1
+      ).value = "Kondisi Awal";
+
+      photoSheet.getCell(
+        currentRow + 1,
+        3
+      ).value = "Hasil Pekerjaan";
+
+      photoSheet.getCell(
+        currentRow + 1,
+        5
+      ).value = "Verifikasi";
+
+      [
+        photoSheet.getCell(currentRow + 1, 1),
+        photoSheet.getCell(currentRow + 1, 3),
+        photoSheet.getCell(currentRow + 1, 5)
+      ].forEach((cell) => {
+        cell.font = {
+          bold: true
+        };
+
+        cell.alignment = {
+          horizontal: "center"
+        };
+      });
+
+      const { data: photos, error: photoError } =
+        await sb
+          .from("photos")
+          .select("stage, path")
+          .eq("report_id", report.id);
+
+      if (photoError) {
+        throw photoError;
+      }
+
+      const stageColumns = {
+        PROBLEM: 1,
+        AFTER_REPAIR: 3,
+        VERIFICATION: 5
+      };
+
+      for (const photo of photos || []) {
+        const targetColumn =
+          stageColumns[photo.stage];
+
+        if (!targetColumn) {
+          continue;
+        }
+
+        try {
+          const {
+            data: signed,
+            error: signedError
+          } = await sb.storage
+            .from("work-photos")
+            .createSignedUrl(
+              photo.path,
+              180
+            );
+
+          if (signedError) {
+            throw signedError;
+          }
+
+          const response = await fetch(
+            signed.signedUrl
+          );
+
+          if (!response.ok) {
+            throw new Error(
+              "Dokumentasi gagal diunduh."
+            );
+          }
+
+          const photoBlob =
+            await response.blob();
+
+          const photoBuffer =
+            await photoBlob.arrayBuffer();
+
+          const extension =
+            photoBlob.type.includes("png")
+              ? "png"
+              : "jpeg";
+
+          const imageId =
+            workbook.addImage({
+              buffer: photoBuffer,
+              extension
+            });
+
+          photoSheet.addImage(imageId, {
+            tl: {
+              col: targetColumn - 1,
+              row: currentRow + 1
+            },
+            ext: {
+              width: 240,
+              height: 180
+            }
+          });
+        } catch (photoError) {
+          console.error(
+            "Dokumentasi gagal dimuat:",
+            photoError
+          );
+
+          photoSheet.getCell(
+            currentRow + 3,
+            targetColumn
+          ).value =
+            "Dokumentasi tidak dapat dimuat";
+        }
+      }
+
+      for (
+        let rowNumber = currentRow + 2;
+        rowNumber <= currentRow + 11;
+        rowNumber++
+      ) {
+        photoSheet.getRow(rowNumber).height = 18;
+      }
+
+      currentRow += 13;
+    }
+
+    /*
+     * DOWNLOAD EXCEL
+     */
+    const excelBuffer =
+      await workbook.xlsx.writeBuffer();
+
+    const excelBlob = new Blob(
+      [excelBuffer],
+      {
+        type:
+          "application/vnd.openxmlformats-" +
+          "officedocument.spreadsheetml.sheet"
+      }
+    );
+
+    const link =
+      document.createElement("a");
+
+    link.href =
+      URL.createObjectURL(excelBlob);
+
+    link.download =
+      `Maintenance_Request_${date}.xlsx`;
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    window.setTimeout(() => {
+      URL.revokeObjectURL(link.href);
+    }, 1000);
+
+    toast(
+      `${rows.length} request berhasil diekspor`
+    );
+  } catch (error) {
+    console.error(
+      "Gagal membuat Excel:",
+      error
+    );
+
+    toast(error.message);
+  }
 };
 
 $("reportDate").value = new Date().toISOString().slice(0, 10);
