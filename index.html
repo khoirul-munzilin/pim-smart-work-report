@@ -28,7 +28,7 @@
 
     <nav>
       <button data-page="dashboard">⌂ Dashboard</button>
-      <button class="operator admin" data-page="create">＋ Lapor</button>
+      <<button class="operator admin" data-page="create">＋ Maintenance Request</button>
       <button class="technician admin" data-page="jobs">🔧 Jobs</button>
       <button class="operator admin" data-page="verify">✓ Verifikasi</button>
       <button class="supervisor admin" data-page="reports">▤ Report</button>
@@ -52,50 +52,95 @@
         </div>
       </section>
 
-      <section id="create" class="page hidden">
-        <h2>Laporan Produksi</h2>
-        <form id="createForm" class="card">
-          <div class="grid">
-            <label>
-              Mesin
-              <select name="machine_id" id="machineSelect" required>
-                <option value="">Pilih mesin</option>
-              </select>
-            </label>
+<section id="create" class="page hidden">
+  <h2>Maintenance Request Order</h2>
 
-            <label>
-              Shift
-              <select name="shift" required>
-                <option value="Shift 1">Shift 1</option>
-                <option value="Shift 2">Shift 2</option>
-                <option value="Shift 3">Shift 3</option>
-              </select>
-            </label>
+  <form id="createForm" class="card">
+    <div class="grid">
+      <label>
+        Kelompok Mesin
+        <input id="machineGroupDisplay" readonly>
+      </label>
 
-            <label>
-              Prioritas
-              <select name="priority" required>
-                <option value="LOW">LOW</option>
-                <option value="MEDIUM">MEDIUM</option>
-                <option value="HIGH" selected>HIGH</option>
-                <option value="EMERGENCY">EMERGENCY</option>
-              </select>
-            </label>
+      <label>
+        Cari Mesin
+        <div class="machine-search-wrap">
+          <input
+            id="machineSearchInput"
+            type="search"
+            autocomplete="off"
+            placeholder="Kode, nama, area, FLOC, atau Equipment No."
+          >
 
-            <label>
-              Technician
-              <select name="technician_id" id="technicianSelect" required>
-                <option value="">Pilih technician</option>
-              </select>
-            </label>
-          </div>
+          <select id="machineSelect" name="machine_id" class="hidden"></select>
+          <div id="machineSuggestions" class="machine-search-results hidden"></div>
+        </div>
+      </label>
 
-          <label>Temuan<textarea name="problem" required></textarea></label>
-          <label>Dampak Produksi<textarea name="impact"></textarea></label>
-          <label>Foto Temuan<input name="photo" type="file" accept="image/*" capture="environment" required></label>
-          <button>KIRIM KE TEKNISI</button>
-        </form>
-      </section>
+      <label>
+        Shift
+        <select name="shift" required>
+          <option>Shift 1</option>
+          <option>Shift 2</option>
+          <option>Shift 3</option>
+          <option>Non Shift</option>
+        </select>
+      </label>
+
+      <label>
+        Prioritas
+        <select name="priority" required>
+          <option>LOW</option>
+          <option>MEDIUM</option>
+          <option selected>HIGH</option>
+          <option>EMERGENCY</option>
+        </select>
+      </label>
+
+      <label>
+        Jenis Pekerjaan
+        <select name="request_type" required>
+          <option value="">Pilih jenis pekerjaan</option>
+          <option value="BREAKDOWN">Breakdown</option>
+          <option value="CORRECTIVE">Corrective</option>
+          <option value="INSPECTION">Inspection</option>
+          <option value="IMPROVEMENT">Improvement</option>
+          <option value="FACILITY">Facility</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </label>
+
+      <label>
+        Technician
+        <select name="technician_id" id="technicianSelect" required>
+          <option value="">Pilih technician</option>
+        </select>
+      </label>
+    </div>
+
+    <div id="machineDetail" class="machine-detail">
+      Cari dan pilih mesin untuk menampilkan Functional Location dan Equipment Number.
+    </div>
+
+    <label>
+      Deskripsi Kerusakan / Permintaan
+      <textarea name="problem" required></textarea>
+    </label>
+
+    <label>
+      Dampak Operasional
+      <textarea name="impact"></textarea>
+    </label>
+
+    <label>
+      Dokumentasi Kondisi Awal
+      <input name="photo" type="file" accept="image/*" capture="environment" required>
+    </label>
+
+    <button>KIRIM MAINTENANCE REQUEST</button>
+  </form>
+</section>
+
 
       <section id="jobs" class="page hidden">
         <h2>Pekerjaan Teknisi</h2>
@@ -103,20 +148,20 @@
       </section>
 
       <section id="work" class="page hidden">
-        <h2>Isi Hasil Pekerjaan</h2>
+        <h2>Maintenance Work Report</h2>
         <form id="workForm" class="card">
           <div id="workTitle"></div>
           <label>Penyebab<textarea name="cause" required></textarea></label>
           <label>Tindakan<textarea name="action" required></textarea></label>
           <label>Spare Part<input name="spare_part"></label>
           <label>Catatan untuk Produksi<textarea name="tech_note"></textarea></label>
-          <label>Foto Hasil<input name="photo" type="file" accept="image/*" capture="environment" required></label>
-          <button class="purple">REQUEST CHECK</button>
+          <label>Dokumentasi Hasil Pekerjaan<input name="photo" type="file" accept="image/*" capture="environment" required></label>
+          <button class="purple">REQUEST VERIFICATION</button>
         </form>
       </section>
 
       <section id="verify" class="page hidden">
-        <h2>Verifikasi Produksi</h2>
+        <h2>Verifikasi</h2>
         <div id="verifyList"></div>
       </section>
 
@@ -132,9 +177,9 @@
             </select>
           </label>
           <label>Catatan<textarea name="production_note" required></textarea></label>
-          <label>Foto Verifikasi<input name="photo" type="file" accept="image/*" capture="environment" required></label>
+          <label>Dokumentasi Verifikasi<input name="photo" type="file" accept="image/*" capture="environment" required></label>
           <div class="row">
-            <button name="decision" value="CLOSED" class="green">TERIMA & CLOSED</button>
+            <button name="decision" value="CLOSED" class="green">ACCEPT & CLOSE</button>
             <button name="decision" value="RETURNED" class="red">KEMBALIKAN</button>
           </div>
         </form>
