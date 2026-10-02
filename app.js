@@ -217,7 +217,43 @@ async function load() {
 
   machines = machineResult.data || [];
   reports = reportResult.data || [];
+const machineSelect = document.getElementById("machineSelect");
 
+if (machineSelect) {
+  machineSelect.innerHTML =
+    '<option value="">Pilih mesin</option>';
+
+  machines.forEach((machine) => {
+    const option = document.createElement("option");
+
+    option.value = machine.id;
+
+    const group =
+      machine.machine_group ||
+      machine.group_name ||
+      "GENERAL";
+
+    const code =
+      machine.code ||
+      machine.machine_code ||
+      "";
+
+    const name =
+      machine.name ||
+      machine.machine_name ||
+      "";
+
+    option.textContent =
+      `[${group}] ${code} • ${name}`;
+
+    machineSelect.appendChild(option);
+  });
+
+  if (machines.length === 0) {
+    machineSelect.innerHTML =
+      '<option value="">Tidak ada mesin untuk section ini</option>';
+  }
+}
   const machineGroupDisplay =
     document.getElementById("machineGroupDisplay");
 
