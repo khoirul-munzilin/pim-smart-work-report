@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#092b4c">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
@@ -15,241 +15,74 @@
       <p>Production & Engineering Report</p>
       <input id="email" type="email" placeholder="Email pengguna" required>
       <input id="password" type="password" placeholder="Password" required>
-      <button style="width:100%">MASUK</button>
-      <p><small>Akun dibuat oleh Admin melalui Supabase Authentication.</small></p>
+      <button type="submit" style="width:100%">MASUK</button>
     </form>
   </section>
 
   <section id="app" class="hidden">
-    <header>
-      <b>PIM • SMART WORK REPORT</b>
-      <span id="who"></span>
-    </header>
-
+    <header><b>PIM • SMART WORK REPORT</b><span id="who"></span></header>
     <nav>
-      <button data-page="dashboard">⌂ Dashboard</button>
-      <button class="operator admin" data-page="create">＋ Maintenance Request</button>
-      <button class="technician admin" data-page="jobs">🔧 Jobs</button>
-      <button class="operator admin" data-page="verify">✓ Verifikasi</button>
-      <button class="supervisor admin" data-page="reports">▤ Report</button>
-      <button class="supervisor admin" data-page="users">👥 Kelola Akun</button>
-      <button class="admin" data-page="admin">⚙ Admin</button>
-      <button id="logout">↪ Logout</button>
+      <button type="button" data-page="dashboard">⌂ Dashboard</button>
+      <button type="button" class="operator admin" data-page="create">＋ Maintenance Request</button>
+      <button type="button" class="technician admin" data-page="jobs">🔧 Jobs</button>
+      <button type="button" class="operator admin" data-page="verify">✓ Verifikasi</button>
+      <button type="button" class="supervisor admin" data-page="reports">▤ Report</button>
+      <button type="button" class="supervisor admin" data-page="users">👥 Kelola Akun</button>
+      <button type="button" class="admin" data-page="admin">⚙ Admin</button>
+      <button type="button" id="logout">↪ Logout</button>
     </nav>
 
     <main>
       <section id="dashboard" class="page">
         <h2>Dashboard</h2>
         <div class="stats">
-          <div class="stat"><b id="total">0</b>Total</div>
-          <div class="stat"><b id="open">0</b>Open</div>
-          <div class="stat"><b id="progress">0</b>Proses</div>
-          <div class="stat"><b id="closed">0</b>Closed</div>
+          <div class="stat"><b id="total">0</b>Total</div><div class="stat"><b id="open">0</b>Open</div>
+          <div class="stat"><b id="progress">0</b>Proses</div><div class="stat"><b id="closed">0</b>Closed</div>
         </div>
-        <div class="card">
-          <h3>Pekerjaan terbaru</h3>
-          <div id="latest"></div>
-        </div>
+        <div class="card"><h3>Pekerjaan terbaru</h3><div id="latest"></div></div>
       </section>
 
-<section id="create" class="page hidden">
-  <h2>Maintenance Request Order</h2>
-
-  <form id="createForm" class="card">
-    <div class="grid">
-      <label>
-        Kelompok Mesin
-        <input id="machineGroupDisplay" readonly>
-      </label>
-
-<label>
-  Pilih Mesin
-  <select id="machineSelect" name="machine_id" required>
-    <option value="">Memuat data mesin...</option>
-  </select>
-</label>
-
-      <label>
-        Shift
-        <select name="shift" required>
-          <option>Shift 1</option>
-          <option>Shift 2</option>
-          <option>Shift 3</option>
-          <option>Non Shift</option>
-        </select>
-      </label>
-
-      <label>
-        Prioritas
-        <select name="priority" required>
-          <option>LOW</option>
-          <option>MEDIUM</option>
-          <option selected>HIGH</option>
-          <option>EMERGENCY</option>
-        </select>
-      </label>
-
-      <label>
-        Jenis Pekerjaan
-        <select name="request_type" required>
-          <option value="">Pilih jenis pekerjaan</option>
-          <option value="BREAKDOWN">Breakdown</option>
-          <option value="CORRECTIVE">Corrective</option>
-          <option value="INSPECTION">Inspection</option>
-          <option value="IMPROVEMENT">Improvement</option>
-          <option value="FACILITY">Facility</option>
-          <option value="OTHER">Other</option>
-        </select>
-      </label>
-
-      <label>
-        Technician
-        <select name="technician_id" id="technicianSelect" required>
-          <option value="">Pilih technician</option>
-        </select>
-      </label>
-    </div>
-
-    <div id="machineDetail" class="machine-detail">
-      Cari dan pilih mesin untuk menampilkan Functional Location dan Equipment Number.
-    </div>
-
-    <label>
-      Deskripsi Kerusakan / Permintaan
-      <textarea name="problem" required></textarea>
-    </label>
-
-    <label>
-      Dampak Operasional
-      <textarea name="impact"></textarea>
-    </label>
-
-    <label>
-      Dokumentasi Kondisi Awal
-      <input name="photo" type="file" accept="image/*" capture="environment" required>
-    </label>
-
-    <button>KIRIM MAINTENANCE REQUEST</button>
-  </form>
-</section>
-
-
-      <section id="jobs" class="page hidden">
-        <h2>Pekerjaan Teknisi</h2>
-        <div id="jobList"></div>
-      </section>
-
-      <section id="work" class="page hidden">
-        <h2>Maintenance Work Report</h2>
-        <form id="workForm" class="card">
-          <div id="workTitle"></div>
-          <label>Penyebab<textarea name="cause" required></textarea></label>
-          <label>Tindakan<textarea name="action" required></textarea></label>
-          <label>Spare Part<input name="spare_part"></label>
-          <label>Catatan untuk Produksi<textarea name="tech_note"></textarea></label>
-          <label>Dokumentasi Hasil Pekerjaan<input name="photo" type="file" accept="image/*" capture="environment" required></label>
-          <button class="purple">REQUEST VERIFICATION</button>
-        </form>
-      </section>
-
-      <section id="verify" class="page hidden">
-        <h2>Verifikasi</h2>
-        <div id="verifyList"></div>
-      </section>
-
-      <section id="verifyFormPage" class="page hidden">
-        <h2>Pengecekan Hasil</h2>
-        <form id="verifyForm" class="card">
-          <div id="verifyTitle"></div>
-          <label>
-            Hasil Test
-            <select name="production_test">
-              <option>NORMAL</option>
-              <option>ABNORMAL</option>
-            </select>
-          </label>
-          <label>Catatan<textarea name="production_note" required></textarea></label>
-          <label>Dokumentasi Verifikasi<input name="photo" type="file" accept="image/*" capture="environment" required></label>
-          <div class="row">
-            <button name="decision" value="CLOSED" class="green">ACCEPT & CLOSE</button>
-            <button name="decision" value="RETURNED" class="red">KEMBALIKAN</button>
+      <section id="create" class="page hidden">
+        <h2>Maintenance Request Order</h2>
+        <form id="createForm" class="card">
+          <div class="grid">
+            <label>Kelompok Mesin<input id="machineGroupDisplay" readonly></label>
+            <label>Cari Mesin
+              <div class="machine-search-wrap">
+                <input id="machineSearchInput" type="search" autocomplete="off" placeholder="Kode, nama, area, FLOC, atau Equipment No.">
+                <select id="machineSelect" name="machine_id" class="hidden" required><option value="">Pilih mesin</option></select>
+                <div id="machineSuggestions" class="machine-search-results hidden"></div>
+              </div>
+            </label>
+            <label>Shift<select name="shift" required><option>Shift 1</option><option>Shift 2</option><option>Shift 3</option><option>Non Shift</option></select></label>
+            <label>Prioritas<select name="priority" required><option>LOW</option><option>MEDIUM</option><option selected>HIGH</option><option>EMERGENCY</option></select></label>
+            <label>Jenis Pekerjaan<select name="request_type" required><option value="">Pilih jenis pekerjaan</option><option value="BREAKDOWN">Breakdown</option><option value="CORRECTIVE">Corrective</option><option value="INSPECTION">Inspection</option><option value="IMPROVEMENT">Improvement</option><option value="FACILITY">Facility</option><option value="OTHER">Other</option></select></label>
+            <label>Technician<select name="technician_id" id="technicianSelect" required><option value="">Pilih technician</option></select></label>
           </div>
+          <div id="machineDetail" class="machine-detail">Cari dan pilih mesin untuk menampilkan Functional Location dan Equipment Number.</div>
+          <label>Deskripsi Kerusakan / Permintaan<textarea name="problem" required></textarea></label>
+          <label>Dampak Operasional<textarea name="impact"></textarea></label>
+          <label>Dokumentasi Kondisi Awal<input name="photo" type="file" accept="image/*" capture="environment" required></label>
+          <button type="submit">KIRIM MAINTENANCE REQUEST</button>
         </form>
       </section>
 
-      <section id="reports" class="page hidden">
-        <h2>Report</h2>
-        <div class="card row">
-          <input id="reportDate" type="date">
-          <button id="downloadExcel" class="green">DOWNLOAD EXCEL + FOTO</button>
-        </div>
-        <div class="card scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>Report</th>
-                <th>Mesin</th>
-                <th>Temuan</th>
-                <th>Status</th>
-                <th>Teknisi</th>
-              </tr>
-            </thead>
-            <tbody id="reportRows"></tbody>
-          </table>
-        </div>
-      </section>
-<section id="users" class="page hidden">
-  <h2>Kelola Akun</h2>
-  <form id="userForm" class="card">
-    <p>Administrator dan Supervisor dapat membuat akun Operator atau Supervisor.</p>
-    <div class="grid">
-      <label>Nama Lengkap<input name="full_name" required maxlength="100"></label>
-      <label>Email<input name="email" type="email" required></label>
-      <label>Password Awal<input name="password" type="password" required minlength="8"></label>
-      <label>Role
-        <select name="role" required>
-          <option value="">Pilih role</option>
-          <option value="operator">Operator</option>
-          <option value="supervisor">Supervisor</option>
-        </select>
-      </label>
-      <label>Section<input name="section" required maxlength="100"></label>
-    </div>
-    <button id="createUserButton" type="submit">BUAT AKUN</button>
-  </form>
-</section>
+      <section id="jobs" class="page hidden"><h2>Pekerjaan Teknisi</h2><div id="jobList"></div></section>
+      <section id="work" class="page hidden"><h2>Maintenance Work Report</h2><form id="workForm" class="card"><div id="workTitle"></div><label>Penyebab<textarea name="cause" required></textarea></label><label>Tindakan<textarea name="action" required></textarea></label><label>Spare Part<input name="spare_part"></label><label>Catatan untuk Produksi<textarea name="tech_note"></textarea></label><label>Dokumentasi Hasil Pekerjaan<input name="photo" type="file" accept="image/*" capture="environment" required></label><button type="submit" class="purple">REQUEST VERIFICATION</button></form></section>
+      <section id="verify" class="page hidden"><h2>Verifikasi</h2><div id="verifyList"></div></section>
+      <section id="verifyFormPage" class="page hidden"><h2>Pengecekan Hasil</h2><form id="verifyForm" class="card"><div id="verifyTitle"></div><label>Hasil Test<select name="production_test"><option>NORMAL</option><option>ABNORMAL</option></select></label><label>Catatan<textarea name="production_note" required></textarea></label><label>Dokumentasi Verifikasi<input name="photo" type="file" accept="image/*" capture="environment" required></label><div class="row"><button type="submit" name="decision" value="CLOSED" class="green">ACCEPT & CLOSE</button><button type="submit" name="decision" value="RETURNED" class="red">KEMBALIKAN</button></div></form></section>
 
-<!-- 3. TAMBAHKAN SETELAH app.js DAN SEBELUM PENUTUP BODY -->
-<script src="user-management.js?v=1"></script>
-
-      <section id="admin" class="page hidden">
-        <h2>Admin</h2>
-        <div class="card">
-          <h3>Master Mesin</h3>
-          <form id="machineForm" class="grid">
-            <label>Kode QR<input name="code" required></label>
-            <label>Nama Mesin<input name="name" required></label>
-            <label>Section<input name="section" required></label>
-            <button>SIMPAN MESIN</button>
-          </form>
-          <p>Untuk 1.000 mesin, import CSV dilakukan melalui Supabase Table Editor atau script import.</p>
-        </div>
-        <div class="card">
-          <h3>Catatan Akun</h3>
-          <p>Buat akun melalui Supabase Authentication, lalu tambahkan role pada tabel profiles.</p>
-        </div>
-      </section>
+      <section id="reports" class="page hidden"><h2>Report</h2><div class="card row"><input id="reportDate" type="date"><button type="button" id="downloadExcel" class="green">DOWNLOAD EXCEL</button></div><div class="card scroll"><table><thead><tr><th>Report</th><th>Mesin</th><th>Temuan</th><th>Status</th><th>Teknisi</th></tr></thead><tbody id="reportRows"></tbody></table></div></section>
+      <section id="users" class="page hidden"><h2>Kelola Akun</h2><form id="userForm" class="card"><div class="grid"><label>Nama Lengkap<input name="full_name" required maxlength="100"></label><label>Email<input name="email" type="email" required></label><label>Password Awal<input name="password" type="password" required minlength="8"></label><label>Role<select name="role" required><option value="">Pilih role</option><option value="operator">Operator</option><option value="technician">Technician</option><option value="supervisor">Supervisor</option></select></label><label>Section<input name="section" required maxlength="100"></label></div><button id="createUserButton" type="submit">BUAT AKUN</button></form></section>
+      <section id="admin" class="page hidden"><h2>Admin</h2><div class="card"><h3>Master Mesin</h3><form id="machineForm" class="grid"><label>Kode Mesin<input name="code" required></label><label>Nama Mesin<input name="name" required></label><label>Section<input name="section" required></label><label>Kelompok<select name="machine_group" required><option>GENERAL</option><option>RDS</option><option>HMP</option></select></label><button type="submit">SIMPAN MESIN</button></form></div></section>
     </main>
   </section>
 
   <div id="toast" class="toast hidden"></div>
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
   <script src="config.js"></script>
-  <script src="app.js?v=4"></script>
- <script src="user-management.js?v=1script"></script>
-
-  <script src="excel-fix.js?v=1"></script>
+  <script src="app.js?v=10"></script>
+  <script src="user-management.js?v=2"></script>
 </body>
 </html>
