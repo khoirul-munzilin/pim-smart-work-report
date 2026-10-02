@@ -290,11 +290,22 @@ function render() {
   $("latest").innerHTML =
     reports.slice(0, 10).map(card).join("") || "Belum ada data";
 
-  const technicianJobs = reports.filter(
-    (item) =>
-      item.technician_id === current.id &&
-      ["OPEN", "IN_PROGRESS", "RETURNED"].includes(item.status)
+  const technicianJobs = reports.filter((item) => {
+  const statusAktif = [
+    "OPEN",
+    "IN_PROGRESS",
+    "RETURNED"
+  ].includes(item.status);
+
+  if (profile.role === "admin") {
+    return statusAktif;
+  }
+
+  return (
+    item.technician_id === current.id &&
+    statusAktif
   );
+});
 
   $("jobList").innerHTML =
     technicianJobs
@@ -305,10 +316,19 @@ function render() {
             <h3>${escapeHtml(item.report_no)} • ${escapeHtml(
           item.machine_name
         )}</h3>
-            <p>${escapeHtml(item.problem)}</p>
-            <button onclick="startWork('${escapeHtml(
-              item.id
-            )}')">MULAI / LANJUTKAN</button>
+
+<p>${escapeHtml(item.problem)}</p>
+
+<p>
+  <b>Technician:</b>
+  ${escapeHtml(item.technician_name || "Belum ditentukan")}
+</p>
+
+<button onclick="startWork('${escapeHtml(
+  item.id
+)}')">MULAI / LANJUTKAN</button>
+``
+
           </article>
         `
       )
@@ -512,14 +532,22 @@ window.startWork = async (id) => {
   }
 
   if (active.status !== "IN_PROGRESS") {
-    const { error } = await sb
-      .from("reports")
-      .update({
-        status: "IN_PROGRESS",
-        start_at: new Date().toISOString()
-      })
-      .eq("id", id)
-      .eq("technician_id", current.id);
+let updateQuery = sb
+  .from("reports")
+  .update({
+    status: "IN_PROGRESS",
+    start_at: new Date().toISOString()
+  })
+  .eq("id", id);
+
+if (profile.role === "technician") {
+  updateQuery = updateQuery.eq(
+    "technician_id",
+    current.id
+  );
+}
+
+const { error } = await updateQuery;
 
     if (error) {
       return toast(error.message);
